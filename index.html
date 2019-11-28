@@ -1,0 +1,45 @@
+<html>
+<head>
+  <script src="p5.min.js"></script>
+  <script src="util.js"></script>
+  <script src="genetic.js"></script>
+  <script>
+
+    function setup() {
+      createCanvas(1000, 480)
+    }
+
+    
+
+    function draw() {
+      background(0)
+      noFill() 
+
+      stroke(255)
+      strokeWeight(10)
+
+      point(width * 0.5, height * 0.5)
+      point(width * 0.5, height * 0.25)
+
+      stroke(0, 153, 255)
+      line(0, height * 0.33, width, height * 0.33)
+
+      stroke(255, 153, 0)
+      rect(width * 0.25, height * 0.1, width * 0.5, height * 0.8)
+
+      var aggregate = genetic.aggregate() 
+
+
+
+      for(var i in aggregate) {
+        point(aggregate[i] * 10, 20)
+      }
+    }
+
+    
+  </script>
+</head>
+<body>
+  
+</body>
+</html>
