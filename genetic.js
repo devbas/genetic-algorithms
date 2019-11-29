@@ -2,6 +2,35 @@ var geneLength = 100
 var geneChoices = [0,1]
 var fittest = 0 
 var populationSize = 100
+var generationCount = 0 
+
+function evolute(population = false) {
+
+  if(!population) {
+    population = initializePopulation()
+
+    return population
+  } else {
+    var { fittest, secondFittest } = getFittestParents(population)
+
+    var { firstChildGenes, secondChildGenes } = crossover(fittest, secondFittest)
+
+    if(Math.random() % 7 < 5) {
+      firstChildGenes = mutate(firstChildGenes)
+      secondChildGenes = mutate(secondChildGenes)
+    }
+
+    firstChild = {}
+    firstChild.genes = firstChildGenes
+    firstChild.fitness = calcFitness(firstChildGenes)
+    // firstChildFitness = calcFitness(firstChild)
+
+  }
+  
+
+
+  return population
+}
 
 function initializePopulation() {
   var population = []
@@ -13,35 +42,29 @@ function initializePopulation() {
 }
 
 function initializeIndividual() {
-  var genes = []
+  var individual = {}
+
+  individual.genes = []
   for(var i = 0; i < geneLength; i++) {
-    genes[i] = geneChoices[Math.floor(Math.random() * geneChoices.length)]
+    individual.genes[i] = geneChoices[Math.floor(Math.random() * geneChoices.length)]
   }
 
-  return genes
+  individual.fitness = calcFitness(individual.genes)
+
+  return individual
 }
 
 function calcFitness(individual) {
   return individual.reduce((a,b) => a + b, 0)
 }
 
-function getFittest(population) {
-  var maxFit = 0
-  var fittestIndividual = []
-
+function calculateFitness(population) {
   for(var i = 0; i < population.length; i++) {
-    var fitness = calcFitness(population[i])
-
-    if(fitness > maxFit) {
-      maxFit = fitness 
-      fittestIndividual = population[i]
-    }
+    fitness = individual.reduce((a,b) => a + b, 0) 
   }
-
-  return fittestIndividual
 }
 
-function getSecondFittest(population) {
+function getFittestParents(population) {
   var maxFit1 = 0 
   var maxFit2 = 0 
 
@@ -56,7 +79,7 @@ function getSecondFittest(population) {
     }
   }
 
-  return { maxFit1: maxFit1, maxFit2: maxFit2 }
+  return { fittest: maxFit1, secondFittest: maxFit2 }
 }
 
 function addFittestOffspring() {
@@ -76,7 +99,18 @@ function mutation(individual) {
   return individual 
 }
 
-function crossover() {
+function crossover(fittest, secondFittest) {
+  var crossoverPoint = getRandomInt(0, 100) 
+
+  var firstChild = fittest
+  var secondChild = secondFittest
+
+  for(var i = 0; i < crossoverPoint; i++) {
+    firstChild.genes[i] = secondFittest.genes[i]
+    secondChild.genes[i] = firstChild.genes[i]
+  }
+
+  return { firstChild: firstChild, secondChild: secondChild }
 
 }
 
