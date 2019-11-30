@@ -16,19 +16,23 @@
       evolute(population, function(offspring) {
         population = offspring
 
-        background(0)
-        noFill() 
+        background('#7DE0E6')
 
-        stroke(255)
-        strokeWeight(10)
+        // stroke(255)
+        
+        strokeWeight(7) 
+        stroke('#ff2a93')
+        line(0, 0, width, 0)
+        
+        strokeWeight(9)
+        binSupply = {}
 
-        stroke(0, 153, 255)
-        line(0, height * 0.33, width, height * 0.33)
         for(var i = 0; i < population.length; i++) {
-          point(population[i].fitness * 10, 10)
+          binSupply[population[i].fitness] = binSupply[population[i].fitness] ? binSupply[population[i].fitness] + 1 : 1
+          point(population[i].fitness * 10, 10 * binSupply[population[i].fitness])
         }
 
-        stroke(255, 153, 0)
+        // stroke(255, 153, 0)
       })
 
 
@@ -36,6 +40,15 @@
 
     
   </script>
+  <style>
+    body {
+      display: flex;
+      background-color: #7DE0E6; 
+      margin: 0; 
+      align-items: center; 
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
   
