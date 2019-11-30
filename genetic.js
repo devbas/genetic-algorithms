@@ -4,31 +4,30 @@ var fittest = 0
 var populationSize = 100
 var generationCount = 0 
 
-function evolute(population = false) {
+function evolute(population = false, callback) {
+  generationCount = generationCount + 1 
 
   if(!population) {
     population = initializePopulation()
 
-    return population
+    callback(population)
   } else {
     var { fittest, secondFittest } = getFittestParents(population)
 
     var children = crossover(fittest, secondFittest)
-    var firstChild = children.firstChild
-    var secondChild = children.secondChild
 
     if(Math.random() % 7 < 0.5) {
-      firstChild = mutate(children.firstChild)
-      secondChild = mutate(children.secondChild)
+      mutateChildren(children.firstChild, children.secondChild, (firstChild, secondChild) => {
+        var leastFittestIndex = getLeastFittestIndex(population)
+        population[leastFittestIndex] = firstChild.fitness > secondChild.fitness ? firstChild : secondChild
+
+        callback(population)
+      })
+    } else {
+      console.log(`Generation ${generationCount} Fittest: ${fittest.fitness}`)
+      callback(population)
     }
-
-    var leastFittestIndex = getLeastFittestIndex(population)
-
-    population[leastFittestIndex] = firstChild.fitness > secondChild.fitness ? firstChild : secondChild
-
   }
-  
-  return population
 }
 
 function getLeastFittestIndex(population) {
@@ -98,20 +97,24 @@ function getFittestParents(population) {
       secondFittestIndividual = fittestIndividual
     }
   }
-  console.log({ fittest: fittestIndividual })
+
   return { fittest: fittestIndividual, secondFittest: secondFittestIndividual }
 }
 
-function mutate(individual) {
-  var mutationPoint = getRandomInt(0, 100)
-  // Flip over the gene
-  if(individual.genes[mutationPoint] === 0) {
-    individual.genes[mutationPoint] = 1 
-  } else {
-    individual.genes[mutationPoint] = 0 
-  }
+function mutateChildren(firstChild, secondChild, callback) {
 
-  return individual 
+  var firstMutationPoint = getRandomInt(0, 100)
+  var secondMutationPoint = getRandomInt(0, 100)
+
+  var mutatedFirstChild = {}
+  mutatedFirstChild.genes = Object.assign([], firstChild.genes, {[firstMutationPoint]: firstChild.genes[firstMutationPoint] == 1 ? 0 : 1 })
+  mutatedFirstChild.fitness = calcFitness(mutatedFirstChild.genes)
+
+  var mutatedSecondChild = {} 
+  mutatedSecondChild.genes = Object.assign([], secondChild.genes, {[secondMutationPoint]: secondChild.genes[secondMutationPoint] == 1 ? 0 : 1 })
+  mutatedSecondChild.fitness = calcFitness(mutatedSecondChild.genes)
+
+  callback(mutatedFirstChild, mutatedSecondChild)
 }
 
 function crossover(fittest, secondFittest) {
