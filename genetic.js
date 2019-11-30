@@ -13,23 +13,38 @@ function evolute(population = false) {
   } else {
     var { fittest, secondFittest } = getFittestParents(population)
 
-    var { firstChildGenes, secondChildGenes } = crossover(fittest, secondFittest)
+    var children = crossover(fittest, secondFittest)
+    var firstChild = children.firstChild
+    var secondChild = children.secondChild
 
-    if(Math.random() % 7 < 5) {
-      firstChildGenes = mutate(firstChildGenes)
-      secondChildGenes = mutate(secondChildGenes)
+    if(Math.random() % 7 < 0.5) {
+      firstChild = mutate(children.firstChild)
+      secondChild = mutate(children.secondChild)
     }
 
-    firstChild = {}
-    firstChild.genes = firstChildGenes
-    firstChild.fitness = calcFitness(firstChildGenes)
-    // firstChildFitness = calcFitness(firstChild)
+    var leastFittestIndex = getLeastFittestIndex(population)
+
+    population[leastFittestIndex] = firstChild.fitness > secondChild.fitness ? firstChild : secondChild
 
   }
   
-
-
   return population
+}
+
+function getLeastFittestIndex(population) {
+  var leastFit = 1000
+  var leastFitIndex = 0 
+
+  for(var i = 0; i < population.length; i++) {
+    var fitness = calcFitness(population[i].genes)
+
+    if(fitness < leastFit) {
+      leastFit = fitness
+      leastFitIndex = i
+    }
+  }
+
+  return leastFitIndex
 }
 
 function initializePopulation() {
@@ -46,7 +61,8 @@ function initializeIndividual() {
 
   individual.genes = []
   for(var i = 0; i < geneLength; i++) {
-    individual.genes[i] = geneChoices[Math.floor(Math.random() * geneChoices.length)]
+    var random = Math.random() 
+    individual.genes[i] = geneChoices[random <= 0.7 ? 0 : 1]
   }
 
   individual.fitness = calcFitness(individual.genes)
@@ -67,33 +83,32 @@ function calculateFitness(population) {
 function getFittestParents(population) {
   var maxFit1 = 0 
   var maxFit2 = 0 
-
+  var fittestIndividual = {}
+  var secondFittestIndividual = {}
   for(var i = 0; i < population.length; i++) {
-    var fitness = calcFitness(population[i])
+    var fitness = calcFitness(population[i].genes)
 
     if(fitness > maxFit1) {
       maxFit2 = maxFit1
       maxFit1 = fitness
+      secondFittestIndividual = fittestIndividual
+      fittestIndividual = population[i]
     } else if(fitness > maxFit2) {
       maxFit2 = fitness
+      secondFittestIndividual = fittestIndividual
     }
   }
-
-  return { fittest: maxFit1, secondFittest: maxFit2 }
+  console.log({ fittest: fittestIndividual })
+  return { fittest: fittestIndividual, secondFittest: secondFittestIndividual }
 }
 
-function addFittestOffspring() {
-
-}
-
-function mutation(individual) {
+function mutate(individual) {
   var mutationPoint = getRandomInt(0, 100)
-
   // Flip over the gene
-  if(individual[mutationPoint] === 0) {
-    individual[mutationPoint] = 1 
+  if(individual.genes[mutationPoint] === 0) {
+    individual.genes[mutationPoint] = 1 
   } else {
-    individual[mutationPoint] = 0 
+    individual.genes[mutationPoint] = 0 
   }
 
   return individual 
@@ -111,7 +126,6 @@ function crossover(fittest, secondFittest) {
   }
 
   return { firstChild: firstChild, secondChild: secondChild }
-
 }
 
 function selection(population) {
