@@ -2,11 +2,12 @@
 <head>
   <script src="p5.min.js"></script>
   <script src="util.js"></script>
-  <script src="genetic.js"></script>
+  <script src="multi-genetic.js"></script>
   <script>
 
     function setup() {
-      createCanvas(1000, 480)
+      createCanvas(1000, 1000)
+      pixelDensity(5.0)
     }
 
     population = undefined
@@ -15,7 +16,6 @@
       
       evolute(population, function(offspring) {
         population = offspring
-
         background('#7DE0E6')
 
         // stroke(255)
@@ -23,13 +23,16 @@
         strokeWeight(7) 
         stroke('#ff2a93')
         line(0, 0, width, 0)
+
+        line(0, height, 0, 0)
         
         strokeWeight(9)
-        binSupply = {}
+        // binSupply = {}
 
         for(var i = 0; i < population.length; i++) {
-          binSupply[population[i].fitness] = binSupply[population[i].fitness] ? binSupply[population[i].fitness] + 1 : 1
-          point(population[i].fitness * 10, 10 * binSupply[population[i].fitness])
+          // binSupply[population[i].totalFitness] = binSupply[population[i].totalFitness] ? binSupply[population[i].totalFitness] + 1 : 1
+          // point(population[i].totalFitness * 10, 10 * binSupply[population[i].totalFitness])
+          point(population[i]['x'].fitness * 10, population[i]['y'].fitness * 10)
         }
 
         // stroke(255, 153, 0)
@@ -51,6 +54,16 @@
   </style>
 </head>
 <body>
-  
+  <div class="content-box" style="display: none;">
+    <h1>Genetic algorithm exploration with P5.js</h1>
+
+    <h3>Set the initial population</h3>
+
+    <h3>Get the fittest parents</h3>
+
+    <h3>Crossover</h3>
+
+    <h3>Mutation</h3>
+  </div>
 </body>
 </html>
