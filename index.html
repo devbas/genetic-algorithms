@@ -5,35 +5,72 @@
   <script src="multi-genetic.js"></script>
   <script>
 
+    var boxSize = 250
+
     function setup() {
-      createCanvas(1000, 1000)
-      pixelDensity(5.0)
+      createCanvas(1000, 1000, WEBGL)
+      // pixelDensity(5.0)
+      // background(0);
     }
 
     population = undefined
 
     function draw() {
-      
+      background('#371722');
+      stroke('#bbab9b');
+      ambientLight(50);
+
+      // rotateY(frameCount * 0.002);
+      rotateY(mouseX * 0.01)
+      rotateX(mouseY * 0.01)
+      // rotateZ(frameCount * 0.02);
+      strokeWeight(5)
+      line(-boxSize, -boxSize, boxSize, boxSize, -boxSize, boxSize);
+      line(-boxSize, -boxSize, boxSize, boxSize, -boxSize, boxSize);
+      line(-boxSize, boxSize, boxSize, boxSize, boxSize, boxSize);
+      line(-boxSize, -boxSize, boxSize, -boxSize, boxSize, boxSize);
+      line(boxSize, -boxSize, boxSize, boxSize, boxSize, boxSize);
+
+      line(-boxSize, -boxSize, -boxSize, boxSize, -boxSize, -boxSize);
+      line(-boxSize, boxSize, -boxSize, boxSize, boxSize, -boxSize);
+      line(-boxSize, -boxSize, -boxSize, -boxSize, boxSize, -boxSize);
+      line(boxSize, -boxSize, -boxSize, boxSize, boxSize, -boxSize);
+
+      line(-boxSize, -boxSize, boxSize, -boxSize, -boxSize, -boxSize);
+      line(-boxSize, boxSize, -boxSize, -boxSize, boxSize, boxSize);
+      line(boxSize, -boxSize, boxSize, boxSize, -boxSize, -boxSize);
+      line(boxSize, boxSize, -boxSize, boxSize, boxSize, boxSize);
+
       evolute(population, function(offspring) {
         population = offspring
-        background('#7DE0E6')
+        console.log(population)
+        // background('#7DE0E6')
 
         // stroke(255)
         
-        strokeWeight(7) 
-        stroke('#ff2a93')
-        line(0, 0, width, 0)
+        // strokeWeight(7) 
+        // stroke('#ff2a93')
+        // line(0, 0, width, 0)
 
-        line(0, height, 0, 0)
-        
-        strokeWeight(9)
+        // line(0, height, 0, 0)
+      
         // binSupply = {}
-
+        strokeWeight(1)
+        // fill('rgba(100%,0%,100%,0.5)');
         for(var i = 0; i < population.length; i++) {
+          push()  
+          // stroke(255, 204, 100)
+          stroke('rgba(187,171,155,0.5)')
+          translate((population[i]['x'].fitness * 5) - boxSize, (population[i]['y'].fitness * 5) - boxSize, (population[i]['z'].fitness * 5) - boxSize)
+          // sphere(boxSize / 50 , 8)
+          
+          sphere(2)
+          pop()  
           // binSupply[population[i].totalFitness] = binSupply[population[i].totalFitness] ? binSupply[population[i].totalFitness] + 1 : 1
           // point(population[i].totalFitness * 10, 10 * binSupply[population[i].totalFitness])
-          point(population[i]['x'].fitness * 10, population[i]['y'].fitness * 10)
+          // point(population[i]['x'].fitness * 10, population[i]['y'].fitness * 10)
         }
+        
 
         // stroke(255, 153, 0)
       })
@@ -46,7 +83,7 @@
   <style>
     body {
       display: flex;
-      background-color: #7DE0E6; 
+      background-color: #371722; 
       margin: 0; 
       align-items: center; 
       justify-content: center;

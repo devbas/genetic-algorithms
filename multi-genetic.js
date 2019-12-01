@@ -1,7 +1,7 @@
-var dims = ['x', 'y'] 
+var dims = ['x', 'y', 'z'] 
 var geneLength = 100 
 var fittest = 0 
-var populationSize = 500 
+var populationSize = 500
 var generationCount = 0 
 var geneChoices = [0, 1]
 
@@ -51,7 +51,7 @@ function initializeIndividual() {
     individual[dims[i]].genes = []
     for(var j = 0; j < geneLength; j++) {
       var random = Math.random() 
-      individual[dims[i]].genes[j] = geneChoices[random <= 0.7 ? 0 : 1]
+      individual[dims[i]].genes[j] = geneChoices[random <= 0.95 ? 0 : 1]
     }
     
     individual[dims[i]].fitness = calcFitness(individual[dims[i]].genes)
