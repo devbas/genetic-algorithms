@@ -1,7 +1,7 @@
 var dims = ['x', 'y', 'z'] 
 var geneLength = 100 
 var fittest = 0 
-var populationSize = 500
+var populationSize = 100
 var generationCount = 0 
 var geneChoices = [0, 1]
 

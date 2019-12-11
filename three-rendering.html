@@ -1,38 +1,138 @@
 <html>
 <head>
-  <script src="three.js"></script>
-  <script src="util.js"></script>
-  <script src="multi-genetic.js"></script>
-  <script>
-  </script>
-  <style>
-    body {
-      display: flex;
-      background-color: #f1f1f1; 
-      margin: 0; 
-      align-items: center; 
-      justify-content: center;
-      padding: 40px; 
+<script src="util.js"></script>
+<script src="multi-genetic.js"></script>
+<script>
+</script>
+<style>
+  canvas {
+    margin: 0; 
+    padding: 0; 
+  }
+
+  body {
+    margin: 0; 
+    padding: 0; 
+  }
+
+  #canvas3d {
+    height: 100%;
+  }
+</style>
+</head>
+<body>
+  <div id="canvas3d"></div>
+  <script src="three.min.js"></script>
+  <script src="OrbitControls.js"></script>
+  <script type="module">
+    let renderer, element
+    let container, scene, divContainer, camera, controls
+    let population
+    let organisms = [] 
+
+    function init() {
+      divContainer = document.getElementById('canvas3d')
+
+      renderer = new THREE.WebGLRenderer({ autoClear: true })
+      renderer.setClearColor(0xffffff, 1)
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      element = renderer.domElement
+      divContainer.appendChild(element)
+
+      scene = new THREE.Scene()
+
+      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100)
+      camera.position.x = - 4
+			camera.position.z = 4
+      camera.position.y = 2
+
+      let floorMaterial = new THREE.MeshBasicMaterial({ color: 255 })
+      let cubeMaterial = new THREE.MeshBasicMaterial({ wireframe: true, roughness: 0.7,
+				color: 0xffffff,
+				bumpScale: 0.002,
+        metalness: 0.2
+      })
+      let sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 })
+
+      let floorGeometry = new THREE.PlaneBufferGeometry(20, 20)
+      let floor = new THREE.Mesh(floorGeometry, floorMaterial)
+      floor.rotation.x = - Math.PI / 2.0;
+
+      container = new THREE.Object3D()
+      container.add(floor)
+
+      scene.add(floor)
+      
+      let boxGeometry = new THREE.BoxBufferGeometry( 1, 1, 1 )
+      let boxMesh = new THREE.Mesh( boxGeometry, cubeMaterial )
+      boxMesh.position.set(0.5, 0.5, 0.5 )
+      boxMesh.castShadow = true
+      scene.add( boxMesh )
+
+      let sphereGeometry = new THREE.SphereBufferGeometry(0.01, 16, 16)
+      
+
+      evolute(population, function(offspring) {
+        population = offspring
+
+        for(var i = 0; i < population.length; i++) {
+          let sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial )
+          
+          let x = population[i]['x'].fitness / 100
+          let y = population[i]['y'].fitness / 100
+          let z = population[i]['z'].fitness / 100
+
+          sphereMesh.position.set(x, y, z)
+
+          scene.add(sphereMesh)
+
+          organisms.push(sphereMesh)
+        }
+      })
+
+      let controls = new THREE.OrbitControls( camera, renderer.domElement )
+
+      window.addEventListener( 'resize', onWindowResize, false );
+
+      render()
     }
 
-    .content-box {
-      width: 100%; 
-      float: left; 
-      background-color: #371722
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+
+      renderer.setSize( window.innerWidth, window.innerHeight )
     }
-  </style>
-  </head>
-  <body>
-    <div class="content-box" id="content-box">
-      <h1>Genetic algorithm exploration with P5.js</h1>
-  
-      <h3>Set the initial population</h3>
-  
-      <h3>Get the fittest parents</h3>
-  
-      <h3>Crossover</h3>
-  
-      <h3>Mutation</h3>
-    </div>
-  </body>
-  </html>
+
+    function resize() {
+      let width = divContainer.offsetWidth
+      let height = divContainer.offsetHeight
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+
+      renderer.setSize(width, height)
+      render()
+    }
+
+    function render() {
+      requestAnimationFrame(render);
+
+      evolute(population, function(offspring) {
+        population = offspring
+
+        for(var i = 0; i < population.length; i++) {
+          let organism = organisms[i]
+
+          organism.position.x = population[i]['x'].fitness / 100
+          organism.position.y = population[i]['y'].fitness / 100
+          organism.position.z = population[i]['z'].fitness / 100
+        }
+      })
+
+      renderer.render(scene, camera);
+    }
+
+    init()
+  </script>
+</body>
+</html>
