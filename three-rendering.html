@@ -22,29 +22,40 @@
 </head>
 <body>
   <div id="canvas3d"></div>
-  <script src="three.min.js"></script>
+  <script src="three.js"></script>
+  <!-- <script src="Ocean.js"></script> -->
   <script src="OrbitControls.js"></script>
   <script type="module">
+
+    import { Ocean } from './Ocean.js';
+
+    let lastTime = (new Date()).getTime()
     let renderer, element
-    let container, scene, divContainer, camera, controls
-    let population
+    let container, scene, divContainer, camera, controls, hemiLight
+    let population, ocean
     let organisms = [] 
 
     function init() {
       divContainer = document.getElementById('canvas3d')
 
       renderer = new THREE.WebGLRenderer({ autoClear: true })
-      renderer.setClearColor(0xffffff, 1)
-      renderer.setSize( window.innerWidth, window.innerHeight );
+      // renderer.setClearColor(0xffffff, 1)
+      renderer.physicallyCorrectLights = true
+      renderer.gammaInput = true
+			renderer.gammaOutput = true
+			renderer.shadowMap.enabled = true
+			renderer.toneMapping = THREE.ReinhardToneMapping
+      renderer.setSize( window.innerWidth, window.innerHeight )
       element = renderer.domElement
       divContainer.appendChild(element)
 
       scene = new THREE.Scene()
 
-      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100)
-      camera.position.x = - 4
-			camera.position.z = 4
-      camera.position.y = 2
+      camera = new THREE.PerspectiveCamera(55.0, window.innerWidth / window.innerHeight, 0.5, 300000)
+      camera.position.x = -450 
+      camera.position.y = -650 
+      camera.position.z = 450
+      camera.lookAt(0,0,0)
 
       let floorMaterial = new THREE.MeshBasicMaterial({ color: 255 })
       let cubeMaterial = new THREE.MeshBasicMaterial({ wireframe: true, roughness: 0.7,
@@ -53,6 +64,7 @@
         metalness: 0.2
       })
       let sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 })
+      let cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 })
 
       let floorGeometry = new THREE.PlaneBufferGeometry(20, 20)
       let floor = new THREE.Mesh(floorGeometry, floorMaterial)
@@ -61,38 +73,87 @@
       container = new THREE.Object3D()
       container.add(floor)
 
-      scene.add(floor)
+      // scene.add(floor)
+
+      hemiLight = new THREE.HemisphereLight( 0xddeeff, 0x0f0e0d, 0.02 );
+			scene.add( hemiLight );
       
-      let boxGeometry = new THREE.BoxBufferGeometry( 1, 1, 1 )
+      let boxGeometry = new THREE.BoxBufferGeometry( 50, 50, 50 )
       let boxMesh = new THREE.Mesh( boxGeometry, cubeMaterial )
-      boxMesh.position.set(0.5, 0.5, 0.5 )
+      boxMesh.position.set(0, 27.5, 0 )
       boxMesh.castShadow = true
       scene.add( boxMesh )
 
-      let sphereGeometry = new THREE.SphereBufferGeometry(0.01, 16, 16)
-      
+      let cylinderGeometry = new THREE.CylinderGeometry(20, 20, 25, 32, 1)
+      let cylinderMesh = new THREE.Mesh( cylinderGeometry, cylinderMaterial )
+      cylinderMesh.castShadow = true 
+      scene.add(cylinderMesh)
 
+      let sphereGeometry = new THREE.SphereBufferGeometry(0.5, 16, 16)
+      
       evolute(population, function(offspring) {
         population = offspring
 
         for(var i = 0; i < population.length; i++) {
-          let sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial )
+          // let sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial )
+          let bulbLight = new THREE.PointLight( 0xffee88, 1, 100, 2 );
+          let bulbMat = new THREE.MeshStandardMaterial( {
+					  emissive: 0xffffee,
+					  emissiveIntensity: 1,
+					  color: 0x000000
+          })
+          bulbLight.add(new THREE.Mesh( sphereGeometry, bulbMat ))
           
-          let x = population[i]['x'].fitness / 100
-          let y = population[i]['y'].fitness / 100
-          let z = population[i]['z'].fitness / 100
+          let x = (population[i]['x'].fitness / 2) + 12.5
+          let y = population[i]['y'].fitness / 2
+          let z = population[i]['z'].fitness / 2
 
-          sphereMesh.position.set(x, y, z)
+          bulbLight.position.set(x, y, z)
+          bulbLight.castShadow = true 
 
-          scene.add(sphereMesh)
+          scene.add(bulbLight)
 
-          organisms.push(sphereMesh)
+          organisms.push(bulbLight)
         }
       })
 
-      let controls = new THREE.OrbitControls( camera, renderer.domElement )
+      let controls = new THREE.OrbitControls( camera, renderer.domElement)
+      controls.minDistance = 0
+      controls.maxDistance = 200 
+      controls.minPolarAngle = 0
+      controls.maxPolarAngle = Math.PI * 0.495
+      controls.userPan = false 
 
       window.addEventListener( 'resize', onWindowResize, false );
+
+      let gsize = 512
+      let res = 1024
+      let gres = res / 2
+      let origx = - gsize / 2
+      let origz = - gsize / 2
+
+      ocean = new Ocean(renderer, camera, scene, {
+        USE_HALF_FLOAT: false,
+        INITIAL_SIZE: 512.0,
+        INITIAL_WIND: [ 10.0, 10.0 ],
+        INITIAL_CHOPPINESS: 1.5,
+        CLEAR_COLOR: [ 1.0, 1.0, 1.0, 0.0 ],
+        GEOMETRY_ORIGIN: [ origx, origz ],
+        SUN_DIRECTION: [ - 1.0, 1.0, 1.0 ],
+        OCEAN_COLOR: new THREE.Vector3( 0.004, 0.016, 0.047 ),
+        SKY_COLOR: new THREE.Vector3( 3.2, 9.6, 12.8 ),
+        EXPOSURE: 0.35,
+        GEOMETRY_RESOLUTION: gres,
+        GEOMETRY_SIZE: gsize,
+        RESOLUTION: res
+      })
+
+      ocean.materialOcean.uniforms[ "u_projectionMatrix" ] = { value: camera.projectionMatrix };
+			ocean.materialOcean.uniforms[ "u_viewMatrix" ] = { value: camera.matrixWorldInverse };
+			ocean.materialOcean.uniforms[ "u_cameraPosition" ] = { value: camera.position };
+      ocean.oceanMesh.castShadow = true
+      // console.log({ ocean: ocean })
+      scene.add(ocean.oceanMesh)
 
       render()
     }
@@ -123,11 +184,29 @@
         for(var i = 0; i < population.length; i++) {
           let organism = organisms[i]
 
-          organism.position.x = population[i]['x'].fitness / 100
-          organism.position.y = population[i]['y'].fitness / 100
-          organism.position.z = population[i]['z'].fitness / 100
+          organism.position.x = (population[i]['x'].fitness / 2) + 12.5
+          organism.position.y = population[i]['y'].fitness / 2
+          organism.position.z = population[i]['z'].fitness / 2
         }
       })
+
+      var currentTime = new Date().getTime();
+      ocean.deltaTime = ( currentTime - lastTime ) / 1000 || 0.0;
+      lastTime = currentTime;
+      ocean.render( ocean.deltaTime );
+      ocean.overrideMaterial = ocean.materialOcean;
+      if ( ocean.changed ) {
+        ocean.materialOcean.uniforms[ "u_size" ].value = ocean.size;
+        ocean.materialOcean.uniforms[ "u_sunDirection" ].value.set( ocean.sunDirectionX, ocean.sunDirectionY, ocean.sunDirectionZ );
+        ocean.materialOcean.uniforms[ "u_exposure" ].value = ocean.exposure;
+        ocean.changed = false;
+      }
+      ocean.materialOcean.uniforms[ "u_normalMap" ].value = ocean.normalMapFramebuffer.texture;
+      ocean.materialOcean.uniforms[ "u_displacementMap" ].value = ocean.displacementMapFramebuffer.texture;
+      ocean.materialOcean.uniforms[ "u_projectionMatrix" ].value = camera.projectionMatrix;
+      ocean.materialOcean.uniforms[ "u_viewMatrix" ].value = camera.matrixWorldInverse;
+      ocean.materialOcean.uniforms[ "u_cameraPosition" ].value = camera.position;
+      ocean.materialOcean.depthTest = true;
 
       renderer.render(scene, camera);
     }
