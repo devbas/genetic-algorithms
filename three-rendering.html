@@ -57,7 +57,7 @@
       camera.position.z = 450
       camera.lookAt(0,0,0)
 
-      let floorMaterial = new THREE.MeshBasicMaterial({ color: 255 })
+      let floorMaterial = new THREE.MeshStandardMaterial({ color: 255 })
       let cubeMaterial = new THREE.MeshStandardMaterial({ roughness: 0.7,
 				color: 0xffffff,
 				bumpScale: 0.002,
@@ -89,9 +89,11 @@
       cylinderMesh.castShadow = true 
       scene.add(cylinderMesh)
 
-      var light = new THREE.DirectionalLight(0xffffff, 1, 100);
-      light.position.set(200, 10, 0);
-      // light.castShadow = true; // default false
+      var light = new THREE.DirectionalLight(0xffffff, 10, 100);
+      light.position.set(1200, 200, 0);
+      light.castShadow = true; // default false
+
+      console.log({ position: light.position })
       // light.shadow.mapSize.width = 1024;
       // light.shadow.mapSize.height = 1024;
       // light.shadow.camera.left = -2000;
@@ -133,11 +135,11 @@
       })
 
       let controls = new THREE.OrbitControls( camera, renderer.domElement)
-      controls.minDistance = 0
-      controls.maxDistance = 200 
-      controls.minPolarAngle = 0
-      controls.maxPolarAngle = Math.PI * 0.495
-      controls.userPan = false 
+      // controls.minDistance = 0
+      // controls.maxDistance = 200 
+      // controls.minPolarAngle = 0
+      // controls.maxPolarAngle = Math.PI * 0.495
+      // controls.userPan = false 
 
       window.addEventListener( 'resize', onWindowResize, false );
 
@@ -157,11 +159,12 @@
         // GEOMETRY_ORIGIN: [ origx, origz ],
         GEOMETRY_ORIGIN: [ 1000, 1000 ],
         // SUN_DIRECTION: [ - 1.0, 1.0, 1.0 ],
-        SUN_DIRECTION: [ -1000, -1000, -1000 ],
+        SUN_DIRECTION: light.position.clone().normalize(),
         OCEAN_COLOR: new THREE.Vector3( 0.004, 0.016, 0.047 ),
         // SKY_COLOR: new THREE.Vector3( 3.2, 9.6, 12.8 ),
         SKY_COLOR: new THREE.Vector3( 3.2, 9.6, 12.8 ),
-        EXPOSURE: 0.35,
+        // EXPOSURE: 0.35,
+        EXPOSURE: 0.08,
         GEOMETRY_RESOLUTION: gres,
         GEOMETRY_SIZE: gsize,
         RESOLUTION: res

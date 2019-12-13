@@ -9,7 +9,6 @@ import {
 	HalfFloatType,
 	LinearFilter,
 	Mesh,
-	MeshStandardMaterial, 
 	NearestFilter,
 	OrthographicCamera,
 	PlaneBufferGeometry,
@@ -18,6 +17,7 @@ import {
 	Scene,
 	ShaderMaterial,
 	UniformsUtils,
+	UniformsLib, 
 	Vector2,
 	Vector3,
 	WebGLRenderTarget
@@ -192,12 +192,28 @@ var Ocean = function ( renderer, options ) {
 	var oceanShader = OceanShaders[ "ocean_main" ];
 	var oceanUniforms = UniformsUtils.clone( oceanShader.uniforms );
 
+	// var light = new THREE.DirectionalLight(0xffffff, 1, 100);
+  // light.position.set(200, 10, 0);
+
 	console.log({ oceanUniforms: oceanUniforms })
 	this.materialOcean = new ShaderMaterial( {
-		uniforms: oceanUniforms,
+		// uniforms: oceanUniforms,
+		uniforms: UniformsUtils.merge([
+			oceanUniforms,
+			THREE.UniformsLib[ "lights" ],
+			{
+				lightPosition: {
+					value: new THREE.Vector3(1200, 200, 0)
+				},
+				time: {
+					value: 0
+				}
+			}
+		]),
 		vertexShader: oceanShader.vertexShader,
-		fragmentShader: oceanShader.fragmentShader
-		// lights: true 
+		fragmentShader: oceanShader.fragmentShader,
+		lights: true
+		// ambientLightColor: 0xffffff
 	} );
 	// this.materialOcean.wireframe = true;
 	this.materialOcean.uniforms.u_geometrySize = { value: this.resolution };
