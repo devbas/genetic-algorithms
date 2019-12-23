@@ -1,7 +1,7 @@
 var dims = ['x', 'y', 'z'] 
 var geneLength = 100 
 var fittest = 0 
-var populationSize = 100
+var populationSize = 50
 var generationCount = 0 
 var geneChoices = [0, 1]
 
@@ -25,7 +25,7 @@ function evolute(population = false, callback) {
         callback(population)
       })
     } else {
-      console.log(`Generation ${generationCount} Fittest: ${fittest.totalFitness}`)
+      // console.log(`Generation ${generationCount} Fittest: ${fittest.totalFitness}`)
       callback(population)
     }
   }
